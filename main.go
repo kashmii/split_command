@@ -8,14 +8,7 @@ import (
 	"split/split"
 )
 
-type Options struct {
-	linesPerFile int
-}
-
 func main() {
-	var options Options
-	options.linesPerFile = 1000
-
 	bFlag := flag.Int64("b", -1, "An integer value for option -b")
 	lFlag := flag.Int("l", -1, "An integer value for option -l")
 	nFlag := flag.Int("n", -1, "An integer value for option -n")
@@ -24,6 +17,8 @@ func main() {
 	args := flag.Args()
 	filename := args[0]
 	fileInfo, err := os.Stat(filename)
+	
+	linesPerFile := 1000
 
 	// コマンドライン引数が足りない場合
 	if len(args) < 1 || filename == "-" {
@@ -63,11 +58,11 @@ func main() {
 	if *bFlag != -1 {
 		split.ByByte(filename, sourceFile, *bFlag)
 	} else if *lFlag != -1 {
-		options.linesPerFile = *lFlag
-		split.ByLine(filename, sourceFile, options.linesPerFile)
+		linesPerFile = *lFlag
+		split.ByLine(filename, sourceFile, linesPerFile)
 	} else if *nFlag != -1 {
 		split.ByNumber(filename, sourceFile, *nFlag)
 	} else {
-		split.ByLine(filename, sourceFile, options.linesPerFile)
+		split.ByLine(filename, sourceFile, linesPerFile)
 	}
 }
