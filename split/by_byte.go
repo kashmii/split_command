@@ -6,13 +6,13 @@ import (
 	"os"
 )
 
-func ByByte(filename string, sourceFile *os.File, bytesPerFile int64) {
+func ByByte(filename string, sourceFile *os.File, bytesPerFile int64) error {
 	suffixLetters := GenerateSuffixLetters()
 	fileCounter := 0
 
 	fileInfo, err := sourceFile.Stat()
 	if err != nil {
-		return
+		return err
 	}
 	fileSize := fileInfo.Size()
 
@@ -25,7 +25,7 @@ func ByByte(filename string, sourceFile *os.File, bytesPerFile int64) {
 		newFile, err := os.Create(firstFilename)
 		if err != nil {
 			fmt.Println("Error:", err)
-			return
+			return err
 		}
 
 		defer newFile.Close()
@@ -36,12 +36,12 @@ func ByByte(filename string, sourceFile *os.File, bytesPerFile int64) {
 				break
 			}
 			if err != nil {
-				return
+				return err
 			}
 
 			_, err = newFile.Write(buffer[:n])
 			if err != nil {
-				return
+				return err
 			}
 
 			bytesWritten += int64(n)
@@ -49,8 +49,9 @@ func ByByte(filename string, sourceFile *os.File, bytesPerFile int64) {
 		fileCounter++
 		if fileCounter >= len(suffixLetters) {
 			fmt.Println("split: too many files")
-			return
+			return nil
 		}
 		bytesWritten = int64(0)
 	}
+	return nil
 }

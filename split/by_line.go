@@ -6,16 +6,17 @@ import (
 	"os"
 )
 
-func ByLine(filename string, sourceFile *os.File, linesPerFile int) {
+func ByLine(filename string, sourceFile *os.File, linesPerFile int) error {
 	suffixLetters := GenerateSuffixLetters()
 	fileCounter := 0
 	lineCount := 0
 
+	// 修正すべき？： 1つ目のファイルをループの外で作成している
 	firstFilename := "x" + suffixLetters[fileCounter]
 	newFile, err := os.Create(firstFilename)
 	if err != nil {
 		fmt.Println("Error:", err)
-		return
+		return err
 	}
 
 	// ファイルから読み込み
@@ -28,7 +29,7 @@ func ByLine(filename string, sourceFile *os.File, linesPerFile int) {
 		_, err := newFile.WriteString(line + "\n")
 		if err != nil {
 			fmt.Println("Error:", err)
-			return
+			return err
 		}
 
 		// 指定行数ごとに新しいファイルを作成
@@ -37,20 +38,21 @@ func ByLine(filename string, sourceFile *os.File, linesPerFile int) {
 			fileCounter++
 			if fileCounter >= len(suffixLetters) {
 				fmt.Println("split: too many files")
-				return
+				return nil
 			}
 			
+			// 修正すべき？： newFileという変数が2箇所で使われている
 			newFilename := "x" + suffixLetters[fileCounter]
 			newFile, err = os.Create(newFilename)
 			if err != nil {
 				fmt.Println("Error:", err)
-				return
+				return err
 			}
 
 			newFile, err = os.Create(newFilename)
 			if err != nil {
 				fmt.Println("Error:", err)
-				return
+				return err
 			}
 			defer newFile.Close()
 		}
@@ -59,4 +61,5 @@ func ByLine(filename string, sourceFile *os.File, linesPerFile int) {
 	if err := scanner.Err(); err != nil {
 		fmt.Println("Error:", err)
 	}
+	return nil
 }

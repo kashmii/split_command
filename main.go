@@ -16,14 +16,49 @@ func main() {
 
 	args := flag.Args()
 	filename := args[0]
-	fileInfo, err := os.Stat(filename)
-	
+
 	linesPerFile := 1000
+
+	validation(filename, args)
+
+	sourceFile, err := os.Open(filename)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	defer sourceFile.Close()
+
+	// オプションに応じて分割
+	if *bFlag != -1 {
+		err := split.ByByte(filename, sourceFile, *bFlag)
+		if err != nil {
+			fmt.Errorf("An error occurred with ByByte method: %v", err)
+		}
+	} else if *lFlag != -1 {
+		linesPerFile = *lFlag
+		err := split.ByLine(filename, sourceFile, linesPerFile)
+		if err != nil {
+			fmt.Errorf("An error occurred with ByLine method: %v", err)
+		}
+	} else if *nFlag != -1 {
+		err := split.ByNumber(filename, sourceFile, *nFlag)
+		if err != nil {
+			fmt.Errorf("An error occurred with ByNumber method: %v", err)
+		}
+	} else {
+		err := split.ByLine(filename, sourceFile, linesPerFile)
+		if err != nil {
+			fmt.Errorf("An error occurred with ByLine method: %v", err)
+		}
+	}
+}
+
+func validation(filename string, args []string) {
+	fileInfo, err := os.Stat(filename)
 
 	// コマンドライン引数が足りない場合
 	if len(args) < 1 || filename == "-" {
-		fmt.Println("本来の挙動: 標準入力から読み込んだものを新ファイルに書き込む")
-		return
+		log.Fatalln("Arrgument is not enough.")
 	}
 
 	// ファイルが存在しない場合
@@ -44,25 +79,5 @@ func main() {
 	} 
 	if fileInfo.Mode().Perm()&0200 == 0 {
 		log.Fatalf("File '%s' is not writable.\n", filename)
-	}
-
-	// ==================================================
-	sourceFile, err := os.Open(filename)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	defer sourceFile.Close()
-
-	// オプションに応じて分割
-	if *bFlag != -1 {
-		split.ByByte(filename, sourceFile, *bFlag)
-	} else if *lFlag != -1 {
-		linesPerFile = *lFlag
-		split.ByLine(filename, sourceFile, linesPerFile)
-	} else if *nFlag != -1 {
-		split.ByNumber(filename, sourceFile, *nFlag)
-	} else {
-		split.ByLine(filename, sourceFile, linesPerFile)
 	}
 }
